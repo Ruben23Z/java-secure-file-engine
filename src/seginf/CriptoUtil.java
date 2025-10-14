@@ -1,0 +1,81 @@
+package seginf;
+
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.io.*;
+import java.security.*;
+import java.util.Arrays;
+import java.util.Base64;
+
+
+public class CriptoUtil {
+
+
+    //le os bytes da chave finaria do ficheiro e verifica o tamanho
+    public static SecretKey LerChave(File keyFile) throws IOException {
+        try (FileInputStream fis = new FileInputStream(keyFile)) {
+            byte[] keyBytes = fis.readAllBytes();
+            int len = keyBytes.length;
+
+            if (len != 16 && len != 24 && len != 32) {
+                throw new IllegalArgumentException(
+                        "Tamanho da chave AES invalida: " + len + " bytes (tem que ser 16, 24, or 32)"
+                );
+            }
+            return new SecretKeySpec(keyBytes, "AES");
+        }
+    }
+
+    //quando se quer gerar e guardar uma nova chave simetrica
+    public static void EscreverChave(File keyFile, byte[] keyBytes) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(keyFile)) {
+            fos.write(keyBytes);
+        }
+    }
+
+
+    public static byte[] genRandomBytes(int length) {
+        SecureRandom sr = new SecureRandom();
+        byte[] array = new byte[length];
+        sr.nextBytes(array); // prenche o array com os bytes aleatorios
+        return array;
+    }
+
+
+    public static SecretKey makeAESChave() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        SecureRandom secRandom = new SecureRandom();
+        keyGen.init(128, secRandom);
+        SecretKey key = keyGen.generateKey();
+        return key;
+    }
+
+
+    public static byte[] fazerHMAC(byte[] data, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
+        // Obtém objeto MAC e inicia com a chave
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(key);
+        // Computa o HMAC da mensagem
+        return mac.doFinal(data);
+    }
+
+    public static boolean verificarHMAC(byte[] dataRecebido, byte[] MacParaVerificar, SecretKey keyRecebido) throws NoSuchAlgorithmException, InvalidKeyException {
+
+        byte[] novoMac = fazerHMAC(dataRecebido, keyRecebido);
+        return Arrays.equals(novoMac, MacParaVerificar); // compara conteúdo
+    }
+
+    public static String Base64Encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
+    }
+
+    public static byte[] Base64Decode(String data) {
+        return (Base64.getDecoder().decode(data));
+    }
+
+    public static IvParameterSpec generateIV() {
+        byte[] iv = genRandomBytes(16); // AES block size = 16 bytes
+        return new IvParameterSpec(iv);
+    }
+}
+
