@@ -34,11 +34,14 @@ public class CriptoUtil {
     }
 
 
-    public static byte[] genRandomBytes(int length) {
+    public static IvParameterSpec generateIV() {
+        int AES_BLOCK_SIZE = 16; // bytes
+
         SecureRandom sr = new SecureRandom();
-        byte[] array = new byte[length];
-        sr.nextBytes(array); // prenche o array com os bytes aleatorios
-        return array;
+        byte[] iv = new byte[AES_BLOCK_SIZE];
+        sr.nextBytes(iv); // prenche o array com os bytes aleatorios
+        // AES block size = 16 bytes
+        return new IvParameterSpec(iv);
     }
 
 
@@ -81,9 +84,6 @@ public class CriptoUtil {
         return (Base64.getDecoder().decode(data));
     }
 
-    public static IvParameterSpec generateIV() {
-        byte[] iv = genRandomBytes(16); // AES block size = 16 bytes
-        return new IvParameterSpec(iv);
-    }
+
 }
 

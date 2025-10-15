@@ -16,11 +16,6 @@ public class AEEengine {
 
     public static String Cifrar(byte[] mensagem, SecretKey aesKey, SecretKey hmacKey) throws Exception {
         IvParameterSpec iv = CriptoUtil.generateIV();
-
-
-
-
-
         // Gera o objeto da cifra simetrica
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         // Associa a chave key a cifra
@@ -28,11 +23,12 @@ public class AEEengine {
         byte[] cifratext = cipher.doFinal(mensagem);
         //E(k)(m)
 
-        // usa o (E(k)(m)) egera a tal =>T(k)(E(k)(m))
+
+        // usa o (E(k)(m)) e gera a tal =>T(k)(E(k)(m))
         byte[] HmacFicheiro = CriptoUtil.fazerHMAC(cifratext, hmacKey);
 
-        byte[] resultado = new byte[iv.getIV().length + cifratext.length + HmacFicheiro.length];
 
+        byte[] resultado = new byte[iv.getIV().length + cifratext.length + HmacFicheiro.length];
         //rraycopy(Object source_arr, int sourcePos,Object dest_arr, int destPos, int len)
         System.arraycopy(iv.getIV(), 0, resultado, 0, iv.getIV().length);
         System.arraycopy(cifratext, 0, resultado, iv.getIV().length, cifratext.length);

@@ -11,36 +11,35 @@ public class AEapp {
             System.out.println("Uso: java AEapp [-cipher|-decipher] <ficheiro> <ficheiro_chave>");
             return;
         }
-
+        //obtem os valores dados do cmd
         String opcao = args[0]; // -cipher ou -decipher
-        File inputFile = new File(args[1]);
+        File inputFile = new File(args[1]); // escreve depois a chave se esta não existir neste file
         File inputKey = new File(args[2]);
-        byte[] inputFileBytes = Files.readAllBytes(inputFile.toPath());
+        byte[] inputFileBytes = Files.readAllBytes(inputFile.toPath()); // transforma em bytes do ficheiro do pdf
 
-        SecretKey aesKey, MACKEY;
-        File aesKeyFile = new File("aes.key");
-        File hmacKeyFile = new File("certificates-keys/hmac.key");
+        SecretKey aesKey, MACKEY; // cria as cahves que vai usar
+
+        File hmacKeyFile = new File("hmac.key");
 
 
 
-        if (inputKey.exists()) {
-            aesKey = CriptoUtil.LerChave(inputKey);
-        } else {
-            aesKey = CriptoUtil.makeAESChave();
+        if (inputKey.exists()) aesKey = CriptoUtil.LerChave(inputKey); // verifica se a chave existe, se sim le
+        else {
+            aesKey = CriptoUtil.makeAESChave(); // senão cria a chave AES aleatoria de 128
 
             //escreve no ficheiro
-            CriptoUtil.EscreverChave(inputKey, aesKey.getEncoded());
+            CriptoUtil.EscreverChave(inputKey, aesKey.getEncoded()); // escreve a chave no ficheiro dado no terminal
         }
 
-        if(hmacKeyFile.exists())MACKEY = CriptoUtil.LerChave(hmacKeyFile);
+        if(hmacKeyFile.exists()) MACKEY = CriptoUtil.LerChave(hmacKeyFile); //verifica se a chave existe, se sim le
         else {
-            MACKEY = CriptoUtil.makeHMACChave();
-            CriptoUtil.EscreverChave(hmacKeyFile, MACKEY.getEncoded());
+            MACKEY = CriptoUtil.makeHMACChave(); // cria a chave HMAC de 128 aleatoria
+            CriptoUtil.EscreverChave(hmacKeyFile, MACKEY.getEncoded()); // cria a chave no file criado para o HMAC
         }
 
 
         if (opcao.equals("-cipher")) {
-            String cifradoBase64 = AEEengine.Cifrar(inputFileBytes, aesKey, MACKEY);
+            String cifradoBase64 = AEEengine.Cifrar(inputFileBytes, aesKey, MACKEY); // cifra passando o ficheiro dado, a chave AES e MACKEY
 
             String nomeSemExt = inputFile.getName();
             int idx = nomeSemExt.lastIndexOf('.');
