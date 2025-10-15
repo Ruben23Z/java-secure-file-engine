@@ -19,31 +19,48 @@ public class AEapp {
 
         SecretKey aesKey, MACKEY;
         File aesKeyFile = new File("aes.key");
-        File hmacKeyFile = new File("hmac.key");
+        File hmacKeyFile = new File("certificates-keys/hmac.key");
+
+
 
         if (inputKey.exists()) {
             aesKey = CriptoUtil.LerChave(inputKey);
-            MACKEY = CriptoUtil.LerChave(hmacKeyFile);
         } else {
             aesKey = CriptoUtil.makeAESChave();
-            MACKEY = CriptoUtil.LerChave(hmacKeyFile);
 
             //escreve no ficheiro
             CriptoUtil.EscreverChave(inputKey, aesKey.getEncoded());
+        }
+
+        if(hmacKeyFile.exists())MACKEY = CriptoUtil.LerChave(hmacKeyFile);
+        else {
+            MACKEY = CriptoUtil.makeHMACChave();
             CriptoUtil.EscreverChave(hmacKeyFile, MACKEY.getEncoded());
         }
 
+
         if (opcao.equals("-cipher")) {
             String cifradoBase64 = AEEengine.Cifrar(inputFileBytes, aesKey, MACKEY);
-            Files.write(new File(inputFile.getName() + ".aes").toPath(), cifradoBase64.getBytes());
+
+            String nomeSemExt = inputFile.getName();
+            int idx = nomeSemExt.lastIndexOf('.');
+            if (idx > 0) nomeSemExt = nomeSemExt.substring(0, idx);
+
+            Files.write(new File(nomeSemExt + ".aes").toPath(), cifradoBase64.getBytes());
             System.out.println("Ficheiro cifrado com sucesso!");
+
 
         } else if (opcao.equals("-decipher")) {
             String conteudoCifrado = Files.readString(inputFile.toPath());
 
             try {
                 byte[] decifrado = AEEengine.Decifrar(conteudoCifrado, aesKey, MACKEY);
-                Files.write(new File("decifrado_" + inputFile.getName()).toPath(), decifrado);
+                String nomeSemExt = inputFile.getName();
+                int idx = nomeSemExt.lastIndexOf('.');
+                if (idx > 0) nomeSemExt = nomeSemExt.substring(0, idx);
+
+
+                Files.write(new File("decifrado_TP1.pdf").toPath(), decifrado);
                 System.out.println("Ficheiro decifrado e autenticado com sucesso!");
             } catch (SecurityException e) {
                 System.out.println("Ficheiro corrompido ou HMAC inválido!");

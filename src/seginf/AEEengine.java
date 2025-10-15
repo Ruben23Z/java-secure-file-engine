@@ -17,6 +17,10 @@ public class AEEengine {
     public static String Cifrar(byte[] mensagem, SecretKey aesKey, SecretKey hmacKey) throws Exception {
         IvParameterSpec iv = CriptoUtil.generateIV();
 
+
+
+
+
         // Gera o objeto da cifra simetrica
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         // Associa a chave key a cifra
@@ -35,7 +39,9 @@ public class AEEengine {
         System.arraycopy(HmacFicheiro, 0, resultado, iv.getIV().length + cifratext.length, HmacFicheiro.length);
 
         // converte para Base64 para salvar
-        return CriptoUtil.Base64Encode(resultado);//[IV (16 bytes)] [Ciphertext (variável)] [HMAC (32 bytes)]
+        String Cifra = CriptoUtil.Base64Encode(resultado);
+        //System.out.println("Cifrado com sucesso!"+ Cifra);
+        return Cifra;//[IV (16 bytes)] [Ciphertext (variável)] [HMAC (32 bytes)]
     }
 
 
