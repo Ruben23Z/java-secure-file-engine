@@ -50,7 +50,15 @@ public class CriptoUtil {
         return key;
     }
 
+    // Gera uma chave para o HMAC (autenticação)
+    public static SecretKey makeHMACChave() throws NoSuchAlgorithmException {
+        KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+        SecureRandom secRandom = new SecureRandom();
+        keyGen.init(256, secRandom);
+        return keyGen.generateKey();
+    }
 
+    //faz o Hmac da data
     public static byte[] fazerHMAC(byte[] data, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
         // Obtém objeto MAC e inicia com a chave
         Mac mac = Mac.getInstance("HmacSHA256");

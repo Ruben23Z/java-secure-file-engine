@@ -45,16 +45,16 @@ public class AEEengine {
         byte[] resultado = Base64.getDecoder().decode(inputBase64);
 
         byte[] ivBytes = Arrays.copyOfRange(resultado, 0, 16);
-        byte[] cifraBytes = Arrays.copyOfRange(resultado, 16, resultado.length-32);
-        byte[] hmacRecebido = Arrays.copyOfRange(resultado, resultado.length-32, resultado.length);
+        byte[] cifraBytes = Arrays.copyOfRange(resultado, 16, resultado.length - 32);
+        byte[] hmacRecebido = Arrays.copyOfRange(resultado, resultado.length - 32, resultado.length);
 
-        boolean autentico= CriptoUtil.verificarHMAC(cifraBytes, hmacRecebido, hmackey);
-        if(!autentico) throw new IllegalArgumentException("HMAC recebida e HMAC calculado é diferentes, a mensagem foi alterado");
+        boolean autentico = CriptoUtil.verificarHMAC(cifraBytes, hmacRecebido, hmackey);
+        if (!autentico)
+            throw new SecurityException("HMAC recebida e HMAC calculado é diferentes, a mensagem foi alterado");
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, aeskey, new IvParameterSpec(ivBytes));
-        byte[] decifra = cipher.doFinal(cifraBytes);
-        System.out.println("Decifrado: " + Base64.getEncoder().encodeToString(decifra));
-        return decifra;
+        //        System.out.println("Decifrado: " + Base64.getEncoder().encodeToString(decifra));
+        return cipher.doFinal(cifraBytes);
     }
 }
