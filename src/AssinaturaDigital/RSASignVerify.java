@@ -35,8 +35,10 @@ public class RSASignVerify {
                 }
             }
         }
-        System.out.println("Usando alias: " + chosenAlias);
+        if (privateKey == null) throw new Exception("Nenhuma chave privada encontrada no KeyStore");
 
+        System.out.println("Usando alias: " + chosenAlias);
+        Arrays.fill(passChar, '\0');
 //        PrivateKey PrivateKey = (PrivateKey) ks.getKey(alias, passChar); //devolve a chave privada associado
         // ao, aliás(usa se porque um keystore pode ter várias chaves), alice ou bob é o alises
 
@@ -44,21 +46,13 @@ public class RSASignVerify {
         Signature sig = ObterHashRSA(hash);
         sig.initSign(privateKey);
 
-        LerFicheiroSig(file, sig);
+        SigIncremental(file, sig);
 
         byte[] signBytes = sig.sign(); // devolve os byes binarios da assinatura
         String SignBase64 = Base64.getEncoder().encodeToString(signBytes);// codifica em DatabaseMetaData 64
 //        System.out.println("Signature Base64: " + SignBase64);
 
-//[arquivo grande]
-//↓(lido em blocos de 8 KB)
-//[Signature.update()] → alimenta o hash incrementalmente
-//↓
-//[hash final (SHA-256)]
-//↓
-//[encripta com chave privada RSA]
-//↓
-//[gera assinatura (256 bytes para RSA-2048)]
+
 
         //remove a extensão
         String nomeSemExt = file;
@@ -66,8 +60,7 @@ public class RSASignVerify {
         if (idx > 0) nomeSemExt = nomeSemExt.substring(0, idx);
 
         Files.write(Path.of(nomeSemExt + ".sig"), signBytes);
-        System.out.println("Sucesso");
-
+        System.out.println("Assinatura gerada com sucesso: " + nomeSemExt + ".sig");
     }
 
     public void Verify(String fileOriginal, String fileAssinatura,
@@ -82,6 +75,7 @@ public class RSASignVerify {
         certLista.add(leafCert);
         certLista.add(ObtemCertificado(certIntermedio)); // CA intermédia
 
+        //cria a cadeia desde o certificado folha até aos intermédios
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
         CertPath certPath = factory.generateCertPath(certLista);
 
@@ -105,12 +99,13 @@ public class RSASignVerify {
         Signature signature = ObterHashRSA(hash);
         signature.initVerify(pk);
 
-        LerFicheiroSig(fileOriginal, signature);
+        SigIncremental(fileOriginal, signature);
 
 
-        byte[] assinaturaBytes = Files.readAllBytes(Path.of(fileAssinatura));
-        boolean verificacaoSucedida = signature.verify(assinaturaBytes);
-        if (!verificacaoSucedida) System.out.println("Assinatura valica e certificado confiavel");
+        byte[] assinaturaBytes = Files.readAllBytes(Path.of(fileAssinatura));//desncripta a assinatura recebida com a PubK
+        boolean verificacaoSucedida = signature.verify(assinaturaBytes);//compara com a calculada
+
+        if (verificacaoSucedida) System.out.println("Assinatura valica e certificado confiavel");
         else System.out.println("Assinatura invalida");
 
     }
@@ -126,8 +121,16 @@ public class RSASignVerify {
         }
     }
 
-
-    public static void LerFicheiroSig(String file, Signature sig) throws Exception {
+    //[arquivo grande]
+//↓(lido em blocos de 8 KB)
+//[Signature.update()] → alimenta o hash incrementalmente
+//↓
+//[hash final (SHA-256)]
+//↓
+//[encripta com chave privada RSA]
+//↓
+//[gera assinatura (256 bytes para RSA-2048)]
+    public static void SigIncremental(String file, Signature sig) throws Exception {
         try (FileInputStream fis = new FileInputStream(file)) { //abre o fileinput para ler o ficheiro
             byte[] buffer = new byte[8192]; //8kb
             int read;
@@ -143,5 +146,4 @@ public class RSASignVerify {
             return (X509Certificate) factory.generateCertificate(fis);
         }
     }
-
 }
