@@ -10,6 +10,21 @@ import java.util.*;
 
 public class RSASignVerify {
     public static void main(String[] args) throws Exception {
+
+//Compilar
+//javac AssinaturaDigital/RSASignVerify.java
+
+//# Assinar o ficheiro (Alice)
+//java AssinaturaDigital.RSASignVerify sign TP1_enunciado.pdf certificates-keys/pfx/Alice_1.pfx changeit sha256
+
+//# Verificar com a cadeia da CA1 (válida)
+//java AssinaturaDigital.RSASignVerify verify TP1_enunciado.pdf TP1_enunciado_Alice_1.sig certificates-keys/end-entities/Alice_1.cer certificates-keys/intermediates/CA1-int.cer certificates-keys/trust-anchors/CA1.cer sha256
+//java AssinaturaDigital.RSASignVerify verify TP1_enunciado.pdf TP1_enunciado_Bob_2.sig certificates-keys/end-entities/Alice_1.cer certificates-keys/intermediates/CA1-int.cer certificates-keys/trust-anchors/CA1.cer sha256
+
+//# Verificar com a cadeia da CA2 (inválida)
+//java AssinaturaDigital.RSASignVerify verify TP1_enunciado.pdf TP1_enunciado_Alice1.sig certificates-keys/end-entities/Bob_2.cer certificates-keys/intermediates/CA2-int.cer certificates-keys/trust-anchors/CA2.cer sha256
+//java AssinaturaDigital.RSASignVerify verify TP1_enunciado.pdf TP1_enunciado_Bob_2.sig certificates-keys/end-entities/Bob_2.cer certificates-keys/intermediates/CA2-int.cer certificates-keys/trust-anchors/CA2.cer sha256
+
         if (args.length < 1) {
             System.out.println("Uso: java RSASignVerify <acao> <parametros>");
             System.out.println("Acoes:");
@@ -95,12 +110,13 @@ public class RSASignVerify {
 
 
         //remove a extensão
-        String nomeSemExt = file;
-        int idx = nomeSemExt.lastIndexOf('.');
-        if (idx > 0) nomeSemExt = nomeSemExt.substring(0, idx);
+        String nomeSemExt = nomeSemExtensao(file);
+        String nomePFX = new File(keyStore).getName();
+        nomePFX = nomeSemExtensao(nomePFX);
+        String assinturaFile= nomeSemExt +"_"+ nomePFX+".sig";
 
-        Files.write(Path.of(nomeSemExt + ".sig"), signBytes);
-        System.out.println("Assinatura gerada com sucesso: " + nomeSemExt + ".sig");
+        Files.write(Path.of(assinturaFile), signBytes);
+        System.out.println("Assinatura gerada com sucesso: " + assinturaFile + ".sig");
     }
 
     public static void Verify(String fileOriginal, String fileAssinatura,
@@ -185,4 +201,15 @@ public class RSASignVerify {
             return (X509Certificate) factory.generateCertificate(fis);
         }
     }
+
+    public static String nomeSemExtensao(String file) {
+        if (file == null) return null;
+
+        int idx = file.lastIndexOf('.');
+        if (idx > 0) {
+            return file.substring(0, idx);
+        }
+        return file;
+    }
+
 }

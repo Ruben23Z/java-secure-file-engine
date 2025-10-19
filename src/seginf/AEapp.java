@@ -7,6 +7,16 @@ import java.nio.file.Files;
 
 public class AEapp {
     public static void main(String[] args) throws Exception {
+//compilar
+//javac seginf/*.java
+
+//cifra do PDF
+//java seginf.AEapp -cipher TP1_enunciado.pdf aes.key
+
+//Decifra do PDF
+//java seginf.AEapp -decipher TP1_enunciado.aes aes.key
+
+
         if (args.length != 3) {
             System.out.println("Uso: java AEapp [-cipher|-decipher] <ficheiro> <ficheiro_chave>");
             return;
