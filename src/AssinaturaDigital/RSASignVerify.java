@@ -1,5 +1,6 @@
 package AssinaturaDigital;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,7 +10,47 @@ import java.util.*;
 
 public class RSASignVerify {
     public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.out.println("Uso: java RSASignVerify <acao> <parametros>");
+            System.out.println("Acoes:");
+            System.out.println("  sign <arquivo> <keystore.p12> <senha> <hash>");
+            System.out.println("  verify <arquivo> <assinatura> <certFolha> <certIntermedio> <certRaiz> <hash>");
+            return;
+        }
 
+
+        //obtem os valores dados do cmd
+        String opcao = args[0]; // -cipher ou -decipher
+
+        if (opcao.equalsIgnoreCase("sign")) {
+            if (args.length != 5) {
+                System.out.println("Uso: sign <arquivo> <keystore.p12> <senha> <hash>");
+                return;
+            }
+            String arquivo = args[1];
+            String keystore = args[2];
+            String senha = args[3];
+            String hash = args[4];
+
+            Sign(arquivo, keystore, senha, hash);
+
+        } else if (opcao.equalsIgnoreCase("verify")) {
+            if (args.length != 7) {
+                System.out.println("Uso: verify <arquivo> <assinatura> <certFolha> <certIntermedio> <certRaiz> <hash>");
+                return;
+            }
+            String arquivo = args[1];
+            String assinatura = args[2];
+            String certFolha = args[3];
+            String certIntermedio = args[4];
+            String certRaiz = args[5];
+            String hash = args[6];
+
+            Verify(arquivo, assinatura, certFolha, certIntermedio, certRaiz, hash);
+
+        } else {
+            System.out.println("Ação inválida: " + opcao);
+        }
     }
 
 
@@ -53,7 +94,6 @@ public class RSASignVerify {
 //        System.out.println("Signature Base64: " + SignBase64);
 
 
-
         //remove a extensão
         String nomeSemExt = file;
         int idx = nomeSemExt.lastIndexOf('.');
@@ -63,8 +103,8 @@ public class RSASignVerify {
         System.out.println("Assinatura gerada com sucesso: " + nomeSemExt + ".sig");
     }
 
-    public void Verify(String fileOriginal, String fileAssinatura,
-                       String certFolha, String certIntermedio, String certRaiz, String hash) throws Exception {
+    public static void Verify(String fileOriginal, String fileAssinatura,
+                              String certFolha, String certIntermedio, String certRaiz, String hash) throws Exception {
 
 
         // Obtém o certificado a partir do ficheiro.cer
@@ -88,11 +128,10 @@ public class RSASignVerify {
         CertPathValidator validator = CertPathValidator.getInstance("PKIX");
         try {
             validator.validate(certPath, params);
-            System.out.println("Certificate chain validated (PKIX)");
+            System.out.println("Certificado de cadeia validado (PKIX)");
         } catch (CertPathValidatorException | InvalidAlgorithmParameterException e) {
             // Se falhar aqui, o certificado não é confiável até as trust anchors fornecidas
-            System.out.println("Certificate chain validation failed: " + e.getMessage());
-            throw e;
+            System.out.println("Certificado de cadeia falhou: " + e.getMessage());
         }
 
         PublicKey pk = leafCert.getPublicKey();//obtem se a chave publica
