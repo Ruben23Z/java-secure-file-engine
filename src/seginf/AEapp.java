@@ -22,7 +22,6 @@ public class AEapp {
         File hmacKeyFile = new File("hmac.key");
 
 
-
         if (inputKey.exists()) aesKey = CriptoUtil.LerChave(inputKey); // verifica se a chave existe, se sim le
         else {
             aesKey = CriptoUtil.makeAESChave(); // senão cria a chave AES aleatoria de 128
@@ -31,7 +30,7 @@ public class AEapp {
             CriptoUtil.EscreverChave(inputKey, aesKey.getEncoded()); // escreve a chave no ficheiro dado no terminal
         }
 
-        if(hmacKeyFile.exists()) MACKEY = CriptoUtil.LerChave(hmacKeyFile); //verifica se a chave existe, se sim le
+        if (hmacKeyFile.exists()) MACKEY = CriptoUtil.LerChave(hmacKeyFile); //verifica se a chave existe, se sim le
         else {
             MACKEY = CriptoUtil.makeHMACChave(); // cria a chave HMAC de 128 aleatoria
             CriptoUtil.EscreverChave(hmacKeyFile, MACKEY.getEncoded()); // cria a chave no file criado para o HMAC
@@ -54,11 +53,6 @@ public class AEapp {
 
             try {
                 byte[] decifrado = AEEengine.Decifrar(conteudoCifrado, aesKey, MACKEY);
-                String nomeSemExt = inputFile.getName();
-                int idx = nomeSemExt.lastIndexOf('.');
-                if (idx > 0) nomeSemExt = nomeSemExt.substring(0, idx);
-
-
                 Files.write(new File("decifrado_TP1.pdf").toPath(), decifrado);
                 System.out.println("Ficheiro decifrado e autenticado com sucesso!");
             } catch (SecurityException e) {

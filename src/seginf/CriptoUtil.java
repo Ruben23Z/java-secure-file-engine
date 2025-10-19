@@ -1,9 +1,17 @@
 package seginf;
 
-import javax.crypto.*;
-import javax.crypto.spec.*;
-import java.io.*;
-import java.security.*;
+import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -62,7 +70,7 @@ public class CriptoUtil {
     }
 
     //faz o Hmac da data
-    public static byte[] fazerHMAC(byte[] data, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] fazerHMAC(byte[] data, SecretKey key) throws Exception {
         // Obtém objeto MAC e inicia com a chave
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(key);
@@ -70,7 +78,7 @@ public class CriptoUtil {
         return mac.doFinal(data);
     }
 
-    public static boolean verificarHMAC(byte[] dataRecebido, byte[] MacParaVerificar, SecretKey keyRecebido) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static boolean verificarHMAC(byte[] dataRecebido, byte[] MacParaVerificar, SecretKey keyRecebido) throws Exception {
 
         byte[] novoMac = fazerHMAC(dataRecebido, keyRecebido);
         return Arrays.equals(novoMac, MacParaVerificar); // compara conteúdo
